@@ -43,9 +43,12 @@ func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	profanities := []string{"kerfuffle", "sharbert", "fornax"}
+	cleanedBody := censorProfanities(content.Body, profanities)
+
 	writeJSON(w, http.StatusOK, struct {
-		Valid bool `json:"valid"`
-	}{Valid: true})
+		CleanedBody string `json:"cleaned_body"`
+	}{CleanedBody: cleanedBody})
 }
 
 func writeError(w http.ResponseWriter, err error, statusCode int) {

@@ -10,8 +10,8 @@ Content-Type: application/json
      client.assert(response.status === 200, "response is not 200")
  })
 
- client.test("contains valid property", function () {
-     client.assert(response.body.hasOwnProperty('valid'), "cannot find 'valid' property")
+ client.test("contains cleaned_body property", function () {
+     client.assert(response.body.hasOwnProperty('cleaned_body'), "cannot find 'cleaned_body' property")
  })
  %}
 

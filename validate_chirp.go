@@ -43,28 +43,24 @@ func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respData, err := json.Marshal(struct {
+	writeJSON(w, http.StatusOK, struct {
 		Valid bool `json:"valid"`
 	}{Valid: true})
-	if err != nil {
-		writeError(w, errors.New("Something went wrong"), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(respData)
 }
 
 func writeError(w http.ResponseWriter, err error, statusCode int) {
-	data, mErr := json.Marshal(errorResponse{Error: err.Error()})
+	writeJSON(w, statusCode, errorResponse{Error: err.Error()})
+}
+
+func writeJSON(w http.ResponseWriter, statusCode int, object interface{}) {
+	data, mErr := json.Marshal(object)
 	if mErr != nil {
 		log.Printf("error marshalling error object: %v", mErr.Error())
 		w.WriteHeader(500)
 		return
 	}
 
-	w.WriteHeader(statusCode)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
 	w.Write(data)
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"io"
 	"log"
 	"net/http"
 )
@@ -17,16 +16,8 @@ func handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 		Body string `json:"body"`
 	}
 
-	data, err := io.ReadAll(r.Body)
-	defer r.Body.Close()
-
-	if err != nil {
-		log.Printf("body reader error: %v", err.Error())
-		writeError(w, errors.New("cannot read request"), http.StatusInternalServerError)
-		return
-	}
-
-	err = json.Unmarshal(data, &content)
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&content)
 	if err != nil {
 		writeError(w, errors.New("request malformed"), http.StatusBadRequest)
 		return

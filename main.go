@@ -13,6 +13,7 @@ func main() {
 	log.Printf("starting server on port %v\n", serverPort)
 
 	mux := http.NewServeMux()
+	mux.Handle("/", http.FileServer(http.Dir(".")))
 	//mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 	//	if request.URL.Path != "/" {
 	//		http.NotFound(writer, request)

@@ -15,8 +15,9 @@ func (a *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 
 func (a *apiConfig) handlerMetrics(writer http.ResponseWriter, request *http.Request) {
 	writer.WriteHeader(200)
-	writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	_, err := writer.Write([]byte(fmt.Sprintf("Hits: %v", a.fileServerHits)))
+	writer.Header().Set("Content-Type", "text/html; charset=utf-8")
+	html := fmt.Sprintf("<html>\n\n<body>\n<h1>Welcome, Chirpy Admin</h1>\n<p>Chirpy has been visited %d times!</p>\n</body>\n\n</html>", a.fileServerHits)
+	_, err := writer.Write([]byte(html))
 	if err != nil {
 		log.Printf("metrics error: %s", err.Error())
 	}

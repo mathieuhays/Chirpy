@@ -5,8 +5,13 @@ import "testing"
 func Test_censorProfanities(t *testing.T) {
 	type args struct {
 		content     string
-		profanities []string
+		profanities map[string]struct{}
 	}
+	badWords := map[string]struct{}{
+		"bad":  {},
+		"word": {},
+	}
+
 	tests := []struct {
 		name string
 		args args
@@ -16,7 +21,7 @@ func Test_censorProfanities(t *testing.T) {
 			name: "no profanities no changes",
 			args: args{
 				content:     "some text here",
-				profanities: []string{"bad", "word"},
+				profanities: badWords,
 			},
 			want: "some text here",
 		},
@@ -24,7 +29,7 @@ func Test_censorProfanities(t *testing.T) {
 			name: "replace profanity",
 			args: args{
 				content:     "some bad text",
-				profanities: []string{"bad", "word"},
+				profanities: badWords,
 			},
 			want: "some **** text",
 		},
@@ -32,7 +37,7 @@ func Test_censorProfanities(t *testing.T) {
 			name: "replace profanity case-incensitive",
 			args: args{
 				content:     "WorD here",
-				profanities: []string{"bad", "word"},
+				profanities: badWords,
 			},
 			want: "**** here",
 		},

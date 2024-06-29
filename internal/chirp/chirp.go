@@ -25,19 +25,23 @@ func NewChirp(body string) (Chirp, error) {
 		return Chirp{}, err
 	}
 
-	cleanBody := censorProfanities(body, []string{"kerfuffle", "sharbert", "fornax"})
+	cleanBody := censorProfanities(body, map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"fornax":    {},
+	})
 
 	return Chirp{Body: cleanBody}, nil
 }
 
-func censorProfanities(content string, profanities []string) string {
+func censorProfanities(content string, profanities map[string]struct{}) string {
 	words := strings.Split(content, " ")
 
 	for i, word := range words {
-		for _, profanity := range profanities {
-			if profanity == strings.ToLower(word) {
-				words[i] = "****"
-			}
+		lower := strings.ToLower(word)
+
+		if _, ok := profanities[lower]; ok {
+			words[i] = "****"
 		}
 	}
 

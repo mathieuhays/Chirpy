@@ -13,15 +13,15 @@ func main() {
 	log.Printf("starting server on port %v\n", serverPort)
 
 	mux := http.NewServeMux()
-	mux.Handle("/", http.FileServer(http.Dir(".")))
-	//mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-	//	if request.URL.Path != "/" {
-	//		http.NotFound(writer, request)
-	//		return
-	//	}
-	//
-	//	fmt.Fprintf(writer, "Welcome\n")
-	//})
+	mux.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir("."))))
+	mux.HandleFunc("/healthz", func(writer http.ResponseWriter, request *http.Request) {
+		writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		writer.WriteHeader(200)
+		_, err := writer.Write([]byte("OK"))
+		if err != nil {
+			log.Printf("writer error: %s", err.Error())
+		}
+	})
 
 	server := http.Server{
 		Addr:    "localhost:" + serverPort,

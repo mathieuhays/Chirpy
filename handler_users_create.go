@@ -3,12 +3,14 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
 
 func (a *apiConfig) handlerPostUsers(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
-		Email string
+		Email    string
+		Password string
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -18,7 +20,7 @@ func (a *apiConfig) handlerPostUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(payload.Email) == 0 {
+	if len(payload.Email) == 0 || len(payload.Password) == 0 {
 		writeError(w, errors.New("payload incomplete"), http.StatusBadRequest)
 		return
 	}
@@ -28,9 +30,20 @@ func (a *apiConfig) handlerPostUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newUser, err := a.database.CreateUser(payload.Email)
+	password, err := validatePassword(payload.Password)
 	if err != nil {
-		writeError(w, err, http.StatusInternalServerError)
+		writeError(w, err, http.StatusBadRequest)
+		return
+	}
+
+	newUser, err := a.database.CreateUser(payload.Email, password)
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrPasswordTooLong) {
+			writeError(w, errors.New("password is too long"), http.StatusBadRequest)
+			return
+		}
+
+		writeError(w, errors.New("something went wrong"), http.StatusInternalServerError)
 		return
 	}
 

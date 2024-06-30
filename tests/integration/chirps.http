@@ -1,0 +1,62 @@
+### all chirps
+GET http://localhost:8080/api/chirps
+
+> {%
+    client.test("is valid", function () {
+        client.assert(response.status == 200, "status code should be 200")
+    })
+%}
+
+### create a new chirp
+POST http://localhost:8080/api/chirps
+Content-Type: application/json
+
+{"body":  "Hello, world!"}
+
+> {%
+    client.test("is valid", function () {
+        client.assert(response.status == 201, "status code should be 201")
+    })
+%}
+
+### create a different chirp
+POST http://localhost:8080/api/chirps
+Content-Type: application/json
+
+{"body":  "Second chirp"}
+
+> {%
+    client.test("is valid", function () {
+        client.assert(response.status == 201, "status code should be 201")
+    })
+%}
+
+### malformed payload
+POST http://localhost:8080/api/chirps
+Content-Type: application/json
+
+{"nobody":  "some chirp"}
+
+> {%
+    client.test("is bad request", function () {
+        client.assert(response.status == 400, "status code should be 400")
+    })
+%}
+
+### chirp
+GET http://localhost:8080/api/chirps/1
+
+> {%
+    client.test("is valid", function () {
+        client.assert(response.status == 200, "status code should be 200")
+    })
+%}
+
+### chirp not found
+GET http://localhost:8080/api/chirps/999999
+
+> {%
+    client.test("is not found", function () {
+        client.assert(response.status == 404, "status code should be 404")
+    })
+%}

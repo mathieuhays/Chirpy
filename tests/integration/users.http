@@ -1,0 +1,99 @@
+#### GET request to example server
+#GET http://localhost:8080/api/users
+#
+#> {%
+#    client.test("is valid", function () {
+#        client.assert(response.status == 200, "status code should be 200")
+#    })
+#%}
+
+### Create new user
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "email": "bobby@example.com",
+  "password": "test1234"
+}
+
+> {%
+ client.test("is valid", function () {
+     client.assert(response.status == 201, "status code should be 201")
+ })
+ %}
+
+### Invalid email
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "email": "myvalidemail",
+  "password": "test1234"
+}
+
+> {%
+    client.test("is bad request", function () {
+        client.assert(response.status == 400, "status code should be 400")
+    })
+%}
+
+### missing password
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "email": "bobby@example.com"
+}
+
+> {%
+    client.test("is bad request", function () {
+        client.assert(response.status == 400, "status code should be 400")
+    })
+%}
+
+### password too short
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "email": "bobby@example.com",
+  "password": "test"
+}
+
+> {%
+    client.test("is bad request", function () {
+        client.assert(response.status == 400, "status code should be 400")
+    })
+
+    client.test("password is too short", function () {
+        client.assert(response.body.error == "password must be at least 8 characters long", "wrong error message")
+    })
+%}
+
+### password too long
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "email": "bobby@example.com",
+  "password": "test1234567890test1234567890test1234567890test1234567890test1234567890123"
+}
+
+> {%
+    client.test("is bad request", function () {
+        client.assert(response.status == 400, "status code should be 400")
+    })
+
+    client.test("password is too short", function () {
+        client.assert(response.body.error == "password is too long")
+    })
+%}
+
+#### Get specific user
+#GET http://localhost:8080/api/users/1
+#
+#> {%
+#    client.test("is valid", function () {
+#        client.assert(response.status == 200, "status code should be 200")
+#    })
+#%}

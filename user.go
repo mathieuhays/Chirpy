@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	errPasswordTooShort = errors.New("password must be at least 8 characters long")
+	errPasswordTooShort = errors.New("password must be at least 6 characters long")
 )
 
 type user struct {
@@ -33,7 +33,7 @@ func isValidEmail(email string) bool {
 }
 
 func validatePassword(password string) (string, error) {
-	if len(password) < 8 {
+	if len(password) < 6 {
 		return "", errPasswordTooShort
 	}
 

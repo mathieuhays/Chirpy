@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"github.com/mathieuhays/Chirpy/internal/database"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
@@ -40,6 +41,11 @@ func (a *apiConfig) handlerPostUsers(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrPasswordTooLong) {
 			writeError(w, errors.New("password is too long"), http.StatusBadRequest)
+			return
+		}
+
+		if errors.Is(err, database.ErrEmailAlreadyExists) {
+			writeError(w, err, http.StatusBadRequest)
 			return
 		}
 

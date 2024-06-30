@@ -14,6 +14,7 @@ Base URL: `http://localhost:8080`
 - `/api/chirps` methods: GET, POST
 - `/api/chirps/{id}` methods: GET
 - `/api/users` methods: POST
+- `/api/login` methods: POST
 
 ## Development
 

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 )
 
 func (a *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
@@ -20,4 +22,23 @@ func (a *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, 200, chirps)
+}
+
+func (a *apiConfig) handlerGetChirp(w http.ResponseWriter, r *http.Request) {
+	chirpID, err := strconv.Atoi(r.PathValue("chirpID"))
+	if err != nil {
+		writeError(w, errors.New("Invalid parameter"), http.StatusBadRequest)
+		return
+	}
+
+	dbChirp, exists := a.database.GetChirp(chirpID)
+	if !exists {
+		writeError(w, errors.New("not found"), http.StatusNotFound)
+		return
+	}
+
+	writeJSON(w, 200, chirp{
+		Id:   dbChirp.Id,
+		Body: dbChirp.Body,
+	})
 }

@@ -3,10 +3,14 @@ package database
 import (
 	"encoding/json"
 	"errors"
-	"github.com/mathieuhays/Chirpy/internal/chirp"
 	"os"
 	"sync"
 )
+
+type DBChirp struct {
+	Id   int
+	Body string
+}
 
 type DB struct {
 	path string
@@ -14,7 +18,7 @@ type DB struct {
 }
 
 type DBStructure struct {
-	Chirps map[int]chirp.Chirp
+	Chirps map[int]DBChirp
 }
 
 func NewDB(path string) (*DB, error) {
@@ -31,30 +35,27 @@ func NewDB(path string) (*DB, error) {
 	return db, nil
 }
 
-func (db *DB) CreateChirp(body string) (chirp.Chirp, error) {
-	c, err := chirp.NewChirp(body)
-	if err != nil {
-		return chirp.Chirp{}, err
-	}
-
+func (db *DB) CreateChirp(body string) (DBChirp, error) {
 	structure, err := db.loadDB()
 	if err != nil {
-		return chirp.Chirp{}, err
+		return DBChirp{}, err
 	}
 
 	newIndex := len(structure.Chirps) + 1
-	c.Id = newIndex
-	structure.Chirps[newIndex] = c
+	structure.Chirps[newIndex] = DBChirp{
+		Id:   newIndex,
+		Body: body,
+	}
 	err = db.writeDB(structure)
 	if err != nil {
-		return chirp.Chirp{}, err
+		return DBChirp{}, err
 	}
 
-	return c, nil
+	return structure.Chirps[newIndex], nil
 }
 
-func (db *DB) GetChirps() ([]chirp.Chirp, error) {
-	var chirps = make([]chirp.Chirp, 0)
+func (db *DB) GetChirps() ([]DBChirp, error) {
+	var chirps = make([]DBChirp, 0)
 	structure, err := db.loadDB()
 
 	if err != nil {
@@ -68,23 +69,23 @@ func (db *DB) GetChirps() ([]chirp.Chirp, error) {
 	return chirps, nil
 }
 
-func (db *DB) GetChirp(id int) (chirp.Chirp, bool) {
+func (db *DB) GetChirp(id int) (DBChirp, bool) {
 	structure, err := db.loadDB()
 	if err != nil {
-		return chirp.Chirp{}, false
+		return DBChirp{}, false
 	}
 
 	if val, exists := structure.Chirps[id]; exists {
 		return val, true
 	}
 
-	return chirp.Chirp{}, false
+	return DBChirp{}, false
 }
 
 func (db *DB) ensureDB() error {
 	_, err := os.ReadFile(db.path)
 	if errors.Is(err, os.ErrNotExist) {
-		structure := DBStructure{Chirps: make(map[int]chirp.Chirp)}
+		structure := DBStructure{Chirps: make(map[int]DBChirp)}
 		return db.writeDB(structure)
 	} else if err != nil {
 		return err

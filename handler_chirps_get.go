@@ -11,5 +11,13 @@ func (a *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var output = make([]chirp, len(chirps))
+	for i, c := range chirps {
+		output[i] = chirp{
+			Id:   c.Id,
+			Body: c.Body,
+		}
+	}
+
 	writeJSON(w, 200, chirps)
 }

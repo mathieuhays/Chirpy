@@ -1,4 +1,4 @@
-package chirp
+package main
 
 import "testing"
 

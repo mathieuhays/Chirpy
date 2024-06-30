@@ -1,37 +1,23 @@
-package chirp
+package main
 
 import (
 	"errors"
 	"strings"
 )
 
-const maxLength = 140
+const chirpMaxLength = 140
 
-type Chirp struct {
+type chirp struct {
 	Id   int    `json:"id"`
 	Body string `json:"body"`
 }
 
 func validateChirp(body string) error {
-	if len(body) > maxLength {
+	if len(body) > chirpMaxLength {
 		return errors.New("chirp is too long")
 	}
 
 	return nil
-}
-
-func NewChirp(body string) (Chirp, error) {
-	if err := validateChirp(body); err != nil {
-		return Chirp{}, err
-	}
-
-	cleanBody := censorProfanities(body, map[string]struct{}{
-		"kerfuffle": {},
-		"sharbert":  {},
-		"fornax":    {},
-	})
-
-	return Chirp{Body: cleanBody}, nil
 }
 
 func censorProfanities(content string, profanities map[string]struct{}) string {

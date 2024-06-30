@@ -14,20 +14,34 @@ func (a *apiConfig) handlerPostChirps(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&payload)
 	if err != nil {
-		writeError(w, errors.New("could not decode payload"), 400)
+		writeError(w, errors.New("could not decode payload"), http.StatusBadRequest)
 		return
 	}
 
 	if len(payload.Body) == 0 {
-		writeError(w, errors.New("payload incomplete"), 400)
+		writeError(w, errors.New("payload incomplete"), http.StatusBadRequest)
 		return
 	}
 
-	newChirp, err := a.database.CreateChirp(payload.Body)
+	if len(payload.Body) > chirpMaxLength {
+		writeError(w, errors.New("chirp is too long"), http.StatusBadRequest)
+		return
+	}
+
+	cleanBody := censorProfanities(payload.Body, map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"fornax":    {},
+	})
+
+	newChirp, err := a.database.CreateChirp(cleanBody)
 	if err != nil {
-		writeError(w, err, 400)
+		writeError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	writeJSON(w, 201, newChirp)
+	writeJSON(w, http.StatusCreated, chirp{
+		Id:   newChirp.Id,
+		Body: newChirp.Body,
+	})
 }

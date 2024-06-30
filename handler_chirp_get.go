@@ -13,11 +13,14 @@ func (a *apiConfig) handlerGetChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chirp, exists := a.database.GetChirp(chirpID)
+	dbChirp, exists := a.database.GetChirp(chirpID)
 	if !exists {
 		writeError(w, errors.New("not found"), http.StatusNotFound)
 		return
 	}
 
-	writeJSON(w, 200, chirp)
+	writeJSON(w, 200, chirp{
+		Id:   dbChirp.Id,
+		Body: dbChirp.Body,
+	})
 }

@@ -2,14 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"github.com/mathieuhays/Chirpy/internal/database"
 	"log"
 	"net/http"
+	"os"
 )
 
 const (
 	filePathRoot = "."
 	serverPort   = "8080"
+	databasePath = "./database.json"
 )
 
 type apiConfig struct {
@@ -19,8 +22,17 @@ type apiConfig struct {
 
 func main() {
 	log.Printf("starting server on port %v\n", serverPort)
+	debug := flag.Bool("debug", false, "Enable debug mode")
+	flag.Parse()
 
-	db, err := database.NewDB("./database.json")
+	if debug != nil && *debug == true {
+		log.Println("Debug mode. Removing the existing DB")
+		if err := os.Remove(databasePath); err != nil {
+			log.Printf("Database purge error: %s", err.Error())
+		}
+	}
+
+	db, err := database.NewDB(databasePath)
 	if err != nil {
 		log.Fatal(err)
 	}

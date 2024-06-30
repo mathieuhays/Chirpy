@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"github.com/joho/godotenv"
 	"github.com/mathieuhays/Chirpy/internal/database"
@@ -14,6 +15,10 @@ const (
 	filePathRoot = "."
 	serverPort   = "8080"
 	databasePath = "./database.json"
+)
+
+var (
+	errSomethingWentWrong = errors.New("something went wrong")
 )
 
 type apiConfig struct {
@@ -59,6 +64,7 @@ func main() {
 	mux.HandleFunc("GET /api/chirps", cfg.handlerGetChirps)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", cfg.handlerGetChirp)
 	mux.HandleFunc("POST /api/users", cfg.handlerPostUsers)
+	mux.HandleFunc("PUT /api/users", cfg.handlerPutUsers)
 	mux.HandleFunc("POST /api/login", cfg.handlePostLogin)
 
 	server := http.Server{

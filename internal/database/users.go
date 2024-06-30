@@ -54,6 +54,37 @@ func (db *DB) CreateUser(email string, password string) (DBUser, error) {
 	return structure.Users[newIndex], nil
 }
 
+func (db *DB) UpdateUser(id int, email, password string) (DBUser, error) {
+	structure, err := db.loadDB()
+	if err != nil {
+		return DBUser{}, err
+	}
+
+	dbUser, exists := db.GetUser(id)
+	if !exists {
+		return DBUser{}, errors.New("user not found")
+	}
+
+	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return DBUser{}, err
+	}
+
+	oldEmail := dbUser.Email
+	dbUser.Email = email
+	dbUser.Password = string(encryptedPassword)
+	structure.Users[dbUser.Id] = dbUser
+	delete(structure.UserEmailIndex, oldEmail)
+	structure.UserEmailIndex[dbUser.Email] = dbUser.Id
+
+	err = db.writeDB(structure)
+	if err != nil {
+		return DBUser{}, err
+	}
+
+	return dbUser, nil
+}
+
 func (db *DB) GetUser(id int) (DBUser, bool) {
 	structure, err := db.loadDB()
 	if err != nil {

@@ -20,6 +20,10 @@ Base URL: `http://localhost:8080`
 
 use `--debug` flag when running the command to automatically erase the database on startup.
 
+## Environment
+
+`JWT_SECRET` can be generated using `openssl rand -base64 64`
+
 ## Testing
 
 `tests/intergration` tests are run using JetBrain's GoLand HTTP request module

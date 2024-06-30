@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"github.com/joho/godotenv"
 	"github.com/mathieuhays/Chirpy/internal/database"
 	"log"
 	"net/http"
@@ -18,9 +19,16 @@ const (
 type apiConfig struct {
 	fileServerHits int
 	database       *database.DB
+	jwtSecret      string
 }
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(err)
+	}
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+
 	log.Printf("starting server on port %v\n", serverPort)
 	debug := flag.Bool("debug", false, "Enable debug mode")
 	flag.Parse()
@@ -40,6 +48,7 @@ func main() {
 	cfg := &apiConfig{
 		fileServerHits: 0,
 		database:       db,
+		jwtSecret:      jwtSecret,
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/app/*", cfg.middlewareMetricsInc(http.StripPrefix("/app/", http.FileServer(http.Dir(filePathRoot)))))

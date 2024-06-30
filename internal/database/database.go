@@ -7,11 +7,6 @@ import (
 	"sync"
 )
 
-type DBChirp struct {
-	Id   int
-	Body string
-}
-
 type DB struct {
 	path string
 	mux  *sync.RWMutex
@@ -19,6 +14,7 @@ type DB struct {
 
 type DBStructure struct {
 	Chirps map[int]DBChirp
+	Users  map[int]DBUser
 }
 
 func NewDB(path string) (*DB, error) {
@@ -35,57 +31,13 @@ func NewDB(path string) (*DB, error) {
 	return db, nil
 }
 
-func (db *DB) CreateChirp(body string) (DBChirp, error) {
-	structure, err := db.loadDB()
-	if err != nil {
-		return DBChirp{}, err
-	}
-
-	newIndex := len(structure.Chirps) + 1
-	structure.Chirps[newIndex] = DBChirp{
-		Id:   newIndex,
-		Body: body,
-	}
-	err = db.writeDB(structure)
-	if err != nil {
-		return DBChirp{}, err
-	}
-
-	return structure.Chirps[newIndex], nil
-}
-
-func (db *DB) GetChirps() ([]DBChirp, error) {
-	var chirps = make([]DBChirp, 0)
-	structure, err := db.loadDB()
-
-	if err != nil {
-		return chirps, err
-	}
-
-	for _, c := range structure.Chirps {
-		chirps = append(chirps, c)
-	}
-
-	return chirps, nil
-}
-
-func (db *DB) GetChirp(id int) (DBChirp, bool) {
-	structure, err := db.loadDB()
-	if err != nil {
-		return DBChirp{}, false
-	}
-
-	if val, exists := structure.Chirps[id]; exists {
-		return val, true
-	}
-
-	return DBChirp{}, false
-}
-
 func (db *DB) ensureDB() error {
 	_, err := os.ReadFile(db.path)
 	if errors.Is(err, os.ErrNotExist) {
-		structure := DBStructure{Chirps: make(map[int]DBChirp)}
+		structure := DBStructure{
+			Chirps: make(map[int]DBChirp),
+			Users:  make(map[int]DBUser),
+		}
 		return db.writeDB(structure)
 	} else if err != nil {
 		return err

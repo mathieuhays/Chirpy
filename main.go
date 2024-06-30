@@ -36,6 +36,7 @@ func main() {
 	mux.HandleFunc("GET /api/reset", cfg.handlerReset)
 	mux.HandleFunc("POST /api/chirps", cfg.handlerPostChirps)
 	mux.HandleFunc("GET /api/chirps", cfg.handlerGetChirps)
+	mux.HandleFunc("GET /api/chirps/{chirpID}", cfg.handlerGetChirp)
 
 	server := http.Server{
 		Addr:    "localhost:" + serverPort,

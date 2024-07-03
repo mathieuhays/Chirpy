@@ -3,19 +3,16 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 )
 
 func (a *apiConfig) handlePostLogin(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
-		Email            string
-		Password         string
-		ExpiresInSeconds int `json:"expires_in_seconds"`
+		Email    string
+		Password string
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -46,32 +43,36 @@ func (a *apiConfig) handlePostLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expiresIn := time.Duration(payload.ExpiresInSeconds) * time.Second
-	day := time.Hour * time.Duration(24)
-	if expiresIn == 0 || expiresIn > day {
-		expiresIn = day
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-		Issuer:    "chirpy",
-		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiresIn).UTC()),
-		Subject:   strconv.Itoa(dbUser.Id),
-	})
-	signedString, err := token.SignedString([]byte(a.jwtSecret))
+	signedString, err := generateAccessToken(dbUser.Id, a.jwtSecret)
 	if err != nil {
 		log.Println(err)
-		writeError(w, errors.New("something went wrong"), http.StatusInternalServerError)
+		writeError(w, errSomethingWentWrong, http.StatusInternalServerError)
+		return
+	}
+
+	newToken, err := generateRefreshToken()
+	if err != nil {
+		log.Println(err)
+		writeError(w, errSomethingWentWrong, http.StatusInternalServerError)
+		return
+	}
+
+	session, err := a.database.CreateSession(dbUser.Id, newToken, time.Now().Add(time.Hour*24*6))
+	if err != nil {
+		log.Println(err)
+		writeError(w, errSomethingWentWrong, http.StatusInternalServerError)
 		return
 	}
 
 	writeJSON(w, http.StatusOK, struct {
-		Id    int    `json:"id"`
-		Email string `json:"email"`
-		Token string `json:"token"`
+		Id           int    `json:"id"`
+		Email        string `json:"email"`
+		Token        string `json:"token"`
+		RefreshToken string `json:"refresh_token"`
 	}{
-		Id:    dbUser.Id,
-		Email: dbUser.Email,
-		Token: signedString,
+		Id:           dbUser.Id,
+		Email:        dbUser.Email,
+		Token:        signedString,
+		RefreshToken: session.Token,
 	})
 }

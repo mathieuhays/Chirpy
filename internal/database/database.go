@@ -16,6 +16,7 @@ type DBStructure struct {
 	Chirps         map[int]DBChirp
 	Users          map[int]DBUser
 	UserEmailIndex map[string]int
+	Sessions       map[string]Session
 }
 
 func NewDB(path string) (*DB, error) {
@@ -39,6 +40,7 @@ func (db *DB) ensureDB() error {
 			Chirps:         make(map[int]DBChirp),
 			Users:          make(map[int]DBUser),
 			UserEmailIndex: map[string]int{},
+			Sessions:       make(map[string]Session),
 		}
 		return db.writeDB(structure)
 	} else if err != nil {

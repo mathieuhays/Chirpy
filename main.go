@@ -19,6 +19,7 @@ const (
 
 var (
 	errSomethingWentWrong = errors.New("something went wrong")
+	errUnauthorized       = errors.New("unauthorized")
 )
 
 type apiConfig struct {

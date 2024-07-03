@@ -49,7 +49,7 @@ func (a *apiConfig) handlerPostUsers(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		writeError(w, errors.New("something went wrong"), http.StatusInternalServerError)
+		writeError(w, errSomethingWentWrong, http.StatusInternalServerError)
 		return
 	}
 

@@ -3,39 +3,13 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
-	"log"
 	"net/http"
-	"strconv"
-	"strings"
 )
 
 func (a *apiConfig) handlerPutUsers(w http.ResponseWriter, r *http.Request) {
-	authorization := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-
-	type ChirpyClaims struct {
-		jwt.RegisteredClaims
-	}
-
-	token, err := jwt.ParseWithClaims(authorization, &ChirpyClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(a.jwtSecret), nil
-	})
-
+	userId, err := verifyAccessToken(getTokenFromRequest(r), a.jwtSecret)
 	if err != nil {
-		log.Println(err)
-		writeError(w, errors.New("unauthorized"), http.StatusUnauthorized)
-		return
-	}
-
-	claims, ok := token.Claims.(*ChirpyClaims)
-	if !ok {
-		writeError(w, errSomethingWentWrong, http.StatusInternalServerError)
-		return
-	}
-
-	userId, err := strconv.Atoi(claims.Subject)
-	if err != nil {
-		writeError(w, errSomethingWentWrong, http.StatusInternalServerError)
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
 		return
 	}
 
@@ -63,7 +37,7 @@ func (a *apiConfig) handlerPutUsers(w http.ResponseWriter, r *http.Request) {
 
 	dbUser, exists := a.database.GetUser(userId)
 	if !exists {
-		writeError(w, errors.New("unauthorized"), http.StatusUnauthorized)
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
 		return
 	}
 

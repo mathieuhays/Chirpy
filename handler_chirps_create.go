@@ -7,12 +7,24 @@ import (
 )
 
 func (a *apiConfig) handlerPostChirps(w http.ResponseWriter, r *http.Request) {
+	userId, err := verifyAccessToken(getTokenFromRequest(r), a.jwtSecret)
+	if err != nil {
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
+		return
+	}
+
+	dbUser, exists := a.database.GetUser(userId)
+	if !exists {
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
+		return
+	}
+
 	var payload struct {
 		Body string
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&payload)
+	err = decoder.Decode(&payload)
 	if err != nil {
 		writeError(w, errors.New("could not decode payload"), http.StatusBadRequest)
 		return
@@ -34,14 +46,15 @@ func (a *apiConfig) handlerPostChirps(w http.ResponseWriter, r *http.Request) {
 		"fornax":    {},
 	})
 
-	newChirp, err := a.database.CreateChirp(cleanBody)
+	newChirp, err := a.database.CreateChirp(cleanBody, dbUser.Id)
 	if err != nil {
 		writeError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	writeJSON(w, http.StatusCreated, chirp{
-		Id:   newChirp.Id,
-		Body: newChirp.Body,
+		Id:       newChirp.Id,
+		Body:     newChirp.Body,
+		AuthorId: newChirp.AuthorId,
 	})
 }

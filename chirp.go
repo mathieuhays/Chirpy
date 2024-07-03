@@ -8,8 +8,9 @@ import (
 const chirpMaxLength = 140
 
 type chirp struct {
-	Id   int    `json:"id"`
-	Body string `json:"body"`
+	Id       int    `json:"id"`
+	Body     string `json:"body"`
+	AuthorId int    `json:"author_id"`
 }
 
 func validateChirp(body string) error {

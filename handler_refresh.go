@@ -1,29 +1,26 @@
 package main
 
 import (
-	"errors"
 	"net/http"
-	"strings"
 	"time"
 )
 
 func (a *apiConfig) handlePostRefresh(w http.ResponseWriter, r *http.Request) {
-	authorization := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-
+	authorization := getTokenFromRequest(r)
 	if len(authorization) == 0 {
-		writeError(w, errors.New("not authorized"), http.StatusUnauthorized)
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
 		return
 	}
 
 	session, exists := a.database.GetSession(authorization)
 	if !exists {
-		writeError(w, errors.New("not authorized"), http.StatusUnauthorized)
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
 		return
 	}
 
 	if session.Expiration.Before(time.Now()) {
 		_ = a.database.RevokeSession(session.Token)
-		writeError(w, errors.New("not authorized"), http.StatusUnauthorized)
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
 		return
 	}
 

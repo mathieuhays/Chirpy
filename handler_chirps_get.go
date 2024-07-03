@@ -16,8 +16,9 @@ func (a *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 	var output = make([]chirp, len(chirps))
 	for i, c := range chirps {
 		output[i] = chirp{
-			Id:   c.Id,
-			Body: c.Body,
+			Id:       c.Id,
+			Body:     c.Body,
+			AuthorId: c.AuthorId,
 		}
 	}
 
@@ -27,7 +28,7 @@ func (a *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 func (a *apiConfig) handlerGetChirp(w http.ResponseWriter, r *http.Request) {
 	chirpID, err := strconv.Atoi(r.PathValue("chirpID"))
 	if err != nil {
-		writeError(w, errors.New("Invalid parameter"), http.StatusBadRequest)
+		writeError(w, errors.New("invalid parameter"), http.StatusBadRequest)
 		return
 	}
 
@@ -38,7 +39,8 @@ func (a *apiConfig) handlerGetChirp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, 200, chirp{
-		Id:   dbChirp.Id,
-		Body: dbChirp.Body,
+		Id:       dbChirp.Id,
+		Body:     dbChirp.Body,
+		AuthorId: dbChirp.AuthorId,
 	})
 }

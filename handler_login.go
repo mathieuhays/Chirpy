@@ -34,12 +34,12 @@ func (a *apiConfig) handlePostLogin(w http.ResponseWriter, r *http.Request) {
 
 	dbUser, exists := a.database.GetUserByEmail(payload.Email)
 	if !exists {
-		writeError(w, errors.New("unauthorized"), http.StatusUnauthorized)
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
 		return
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(payload.Password)); err != nil {
-		writeError(w, errors.New("unauthorized"), http.StatusUnauthorized)
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
 		return
 	}
 

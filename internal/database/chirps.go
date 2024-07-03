@@ -1,11 +1,12 @@
 package database
 
 type DBChirp struct {
-	Id   int
-	Body string
+	Id       int
+	Body     string
+	AuthorId int
 }
 
-func (db *DB) CreateChirp(body string) (DBChirp, error) {
+func (db *DB) CreateChirp(body string, authorId int) (DBChirp, error) {
 	structure, err := db.loadDB()
 	if err != nil {
 		return DBChirp{}, err
@@ -13,8 +14,9 @@ func (db *DB) CreateChirp(body string) (DBChirp, error) {
 
 	newIndex := len(structure.Chirps) + 1
 	structure.Chirps[newIndex] = DBChirp{
-		Id:   newIndex,
-		Body: body,
+		Id:       newIndex,
+		Body:     body,
+		AuthorId: authorId,
 	}
 	err = db.writeDB(structure)
 	if err != nil {

@@ -12,12 +12,13 @@ func (db *DB) CreateChirp(body string, authorId int) (DBChirp, error) {
 		return DBChirp{}, err
 	}
 
-	newIndex := len(structure.Chirps) + 1
+	newIndex := structure.ChirpAutoIncrement + 1
 	structure.Chirps[newIndex] = DBChirp{
 		Id:       newIndex,
 		Body:     body,
 		AuthorId: authorId,
 	}
+	structure.ChirpAutoIncrement = newIndex
 	err = db.writeDB(structure)
 	if err != nil {
 		return DBChirp{}, err
@@ -52,4 +53,15 @@ func (db *DB) GetChirp(id int) (DBChirp, bool) {
 	}
 
 	return DBChirp{}, false
+}
+
+func (db *DB) DeleteChirp(id int) error {
+	structure, err := db.loadDB()
+	if err != nil {
+		return err
+	}
+
+	delete(structure.Chirps, id)
+
+	return db.writeDB(structure)
 }

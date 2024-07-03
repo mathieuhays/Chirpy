@@ -13,10 +13,11 @@ type DB struct {
 }
 
 type DBStructure struct {
-	Chirps         map[int]DBChirp
-	Users          map[int]DBUser
-	UserEmailIndex map[string]int
-	Sessions       map[string]Session
+	Chirps             map[int]DBChirp
+	ChirpAutoIncrement int
+	Users              map[int]DBUser
+	UserEmailIndex     map[string]int
+	Sessions           map[string]Session
 }
 
 func NewDB(path string) (*DB, error) {
@@ -37,10 +38,11 @@ func (db *DB) ensureDB() error {
 	_, err := os.ReadFile(db.path)
 	if errors.Is(err, os.ErrNotExist) {
 		structure := DBStructure{
-			Chirps:         make(map[int]DBChirp),
-			Users:          make(map[int]DBUser),
-			UserEmailIndex: map[string]int{},
-			Sessions:       make(map[string]Session),
+			Chirps:             make(map[int]DBChirp),
+			ChirpAutoIncrement: 0,
+			Users:              make(map[int]DBUser),
+			UserEmailIndex:     map[string]int{},
+			Sessions:           make(map[string]Session),
 		}
 		return db.writeDB(structure)
 	} else if err != nil {

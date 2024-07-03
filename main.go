@@ -34,6 +34,9 @@ func main() {
 	}
 
 	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET environment variable must be set")
+	}
 
 	log.Printf("starting server on port %v\n", serverPort)
 	debug := flag.Bool("debug", false, "Enable debug mode")

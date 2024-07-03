@@ -11,8 +11,9 @@ var (
 )
 
 type user struct {
-	Id    int    `json:"id"`
-	Email string `json:"email"`
+	Id          int    `json:"id"`
+	Email       string `json:"email"`
+	IsChirpyRed bool   `json:"is_chirpy_red"`
 }
 
 func isValidEmail(email string) bool {

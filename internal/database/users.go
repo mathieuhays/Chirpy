@@ -10,9 +10,10 @@ var (
 )
 
 type DBUser struct {
-	Id       int
-	Email    string
-	Password string
+	Id          int
+	Email       string
+	Password    string
+	IsChirpyRed bool
 }
 
 func (db *DB) CreateUser(email string, password string) (DBUser, error) {
@@ -40,9 +41,10 @@ func (db *DB) CreateUser(email string, password string) (DBUser, error) {
 
 	newIndex := len(structure.Users) + 1
 	structure.Users[newIndex] = DBUser{
-		Id:       newIndex,
-		Email:    email,
-		Password: string(encryptedPassword),
+		Id:          newIndex,
+		Email:       email,
+		Password:    string(encryptedPassword),
+		IsChirpyRed: false,
 	}
 	structure.UserEmailIndex[email] = newIndex
 
@@ -54,35 +56,27 @@ func (db *DB) CreateUser(email string, password string) (DBUser, error) {
 	return structure.Users[newIndex], nil
 }
 
-func (db *DB) UpdateUser(id int, email, password string) (DBUser, error) {
+func (db *DB) UpdateUser(user DBUser) (DBUser, error) {
 	structure, err := db.loadDB()
 	if err != nil {
 		return DBUser{}, err
 	}
 
-	dbUser, exists := db.GetUser(id)
+	dbUser, exists := db.GetUser(user.Id)
 	if !exists {
 		return DBUser{}, errors.New("user not found")
 	}
 
-	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return DBUser{}, err
-	}
-
-	oldEmail := dbUser.Email
-	dbUser.Email = email
-	dbUser.Password = string(encryptedPassword)
-	structure.Users[dbUser.Id] = dbUser
-	delete(structure.UserEmailIndex, oldEmail)
-	structure.UserEmailIndex[dbUser.Email] = dbUser.Id
+	structure.Users[user.Id] = user
+	delete(structure.UserEmailIndex, dbUser.Email)
+	structure.UserEmailIndex[user.Email] = user.Id
 
 	err = db.writeDB(structure)
 	if err != nil {
 		return DBUser{}, err
 	}
 
-	return dbUser, nil
+	return user, nil
 }
 
 func (db *DB) GetUser(id int) (DBUser, bool) {

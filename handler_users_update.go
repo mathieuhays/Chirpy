@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
 
@@ -47,14 +48,24 @@ func (a *apiConfig) handlerPutUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newDbUser, err := a.database.UpdateUser(dbUser.Id, payload.Email, password)
+	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		writeError(w, errSomethingWentWrong, http.StatusInternalServerError)
+		return
+	}
+
+	dbUser.Email = payload.Email
+	dbUser.Password = string(encryptedPassword)
+
+	newDbUser, err := a.database.UpdateUser(dbUser)
 	if err != nil {
 		writeError(w, errSomethingWentWrong, http.StatusInternalServerError)
 		return
 	}
 
 	writeJSON(w, http.StatusOK, user{
-		Id:    newDbUser.Id,
-		Email: newDbUser.Email,
+		Id:          newDbUser.Id,
+		Email:       newDbUser.Email,
+		IsChirpyRed: newDbUser.IsChirpyRed,
 	})
 }

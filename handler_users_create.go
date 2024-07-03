@@ -54,7 +54,8 @@ func (a *apiConfig) handlerPostUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, user{
-		Id:    newUser.Id,
-		Email: newUser.Email,
+		Id:          newUser.Id,
+		Email:       newUser.Email,
+		IsChirpyRed: newUser.IsChirpyRed,
 	})
 }

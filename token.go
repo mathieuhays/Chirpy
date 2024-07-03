@@ -5,9 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
-	"net/http"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -48,8 +46,4 @@ func verifyAccessToken(accessToken string, jwtSecret string) (int, error) {
 	}
 
 	return strconv.Atoi(claims.Subject)
-}
-
-func getTokenFromRequest(r *http.Request) string {
-	return strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 }

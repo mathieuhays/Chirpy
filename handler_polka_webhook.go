@@ -3,10 +3,22 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"github.com/mathieuhays/Chirpy/internal/auth"
 	"net/http"
 )
 
 func (a *apiConfig) handlerPostPolkaWebhook(w http.ResponseWriter, r *http.Request) {
+	token, err := auth.GetAuthorization(r.Header)
+	if err != nil || token.Name != auth.TypeApiKey {
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
+		return
+	}
+
+	if token.Value != a.polkaApiKey {
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
+		return
+	}
+
 	var payload struct {
 		Event string
 		Data  struct {
@@ -15,7 +27,7 @@ func (a *apiConfig) handlerPostPolkaWebhook(w http.ResponseWriter, r *http.Reque
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&payload)
+	err = decoder.Decode(&payload)
 	if err != nil {
 		writeError(w, errors.New("could not decode payload"), http.StatusBadRequest)
 		return

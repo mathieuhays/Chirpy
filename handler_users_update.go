@@ -3,12 +3,19 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"github.com/mathieuhays/Chirpy/internal/auth"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
 
 func (a *apiConfig) handlerPutUsers(w http.ResponseWriter, r *http.Request) {
-	userId, err := verifyAccessToken(getTokenFromRequest(r), a.jwtSecret)
+	token, err := auth.GetAuthorization(r.Header)
+	if err != nil || token.Name != auth.TypeBearer {
+		writeError(w, errUnauthorized, http.StatusUnauthorized)
+		return
+	}
+
+	userId, err := verifyAccessToken(token.Value, a.jwtSecret)
 	if err != nil {
 		writeError(w, errUnauthorized, http.StatusUnauthorized)
 		return

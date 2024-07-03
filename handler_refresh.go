@@ -1,18 +1,19 @@
 package main
 
 import (
+	"github.com/mathieuhays/Chirpy/internal/auth"
 	"net/http"
 	"time"
 )
 
 func (a *apiConfig) handlePostRefresh(w http.ResponseWriter, r *http.Request) {
-	authorization := getTokenFromRequest(r)
-	if len(authorization) == 0 {
+	token, err := auth.GetAuthorization(r.Header)
+	if err != nil || token.Name != auth.TypeBearer {
 		writeError(w, errUnauthorized, http.StatusUnauthorized)
 		return
 	}
 
-	session, exists := a.database.GetSession(authorization)
+	session, exists := a.database.GetSession(token.Value)
 	if !exists {
 		writeError(w, errUnauthorized, http.StatusUnauthorized)
 		return

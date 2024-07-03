@@ -26,6 +26,7 @@ type apiConfig struct {
 	fileServerHits int
 	database       *database.DB
 	jwtSecret      string
+	polkaApiKey    string
 }
 
 func main() {
@@ -36,6 +37,11 @@ func main() {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		log.Fatal("JWT_SECRET environment variable must be set")
+	}
+
+	polkaApiKey := os.Getenv("POLKA_API_KEY")
+	if polkaApiKey == "" {
+		log.Fatal("POLKA_API_KEY environment variable must be set")
 	}
 
 	log.Printf("starting server on port %v\n", serverPort)
@@ -58,6 +64,7 @@ func main() {
 		fileServerHits: 0,
 		database:       db,
 		jwtSecret:      jwtSecret,
+		polkaApiKey:    polkaApiKey,
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/app/*", cfg.middlewareMetricsInc(http.StripPrefix("/app/", http.FileServer(http.Dir(filePathRoot)))))

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 func (a *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +16,7 @@ func (a *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 	}
 
 	authorIdRaw := r.URL.Query().Get("author_id")
-	baseLen := len(chirps)
+	sortMethod := strings.ToLower(r.URL.Query().Get("sort"))
 	var authorId *int
 
 	if authorIdRaw != "" {
@@ -25,11 +26,10 @@ func (a *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		baseLen = 0 // can't predict final array size anymore
 		authorId = &id
 	}
 
-	var output = make([]chirp, baseLen)
+	var output = make([]chirp, 0)
 	for _, c := range chirps {
 		if authorId != nil && c.AuthorId != *authorId {
 			continue
@@ -42,9 +42,15 @@ func (a *apiConfig) handlerGetChirps(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	sort.Slice(output, func(i, j int) bool {
-		return output[i].Id < output[j].Id
-	})
+	if sortMethod == "desc" {
+		sort.Slice(output, func(i, j int) bool {
+			return output[i].Id > output[j].Id
+		})
+	} else {
+		sort.Slice(output, func(i, j int) bool {
+			return output[i].Id < output[j].Id
+		})
+	}
 
 	writeJSON(w, 200, output)
 }
